@@ -1,0 +1,63 @@
+name: Deploy app to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['web/**', 'supabase/functions/_shared/logic.js', '.github/workflows/pages.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check settings
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+        run: |
+          missing=""
+          for v in SUPABASE_URL SUPABASE_PUBLISHABLE_KEY VAPID_PUBLIC_KEY; do
+            [ -z "${!v}" ] && missing="$missing $v"
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Add these repository variables (Settings → Secrets and variables → Actions → Variables):$missing"
+            exit 1
+          fi
+
+      - name: Build site
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_PUBLISHABLE_KEY: ${{ vars.SUPABASE_PUBLISHABLE_KEY }}
+          VAPID_PUBLIC_KEY: ${{ vars.VAPID_PUBLIC_KEY }}
+        run: |
+          mkdir -p _site
+          cp -r web/. _site/
+          rm -f _site/config.example.js
+          cp supabase/functions/_shared/logic.js _site/logic.js
+          node -e '
+            const c = { supabaseUrl: process.env.SUPABASE_URL.replace(/\/+$/, ""), supabaseKey: process.env.SUPABASE_PUBLISHABLE_KEY, vapidPublicKey: process.env.VAPID_PUBLIC_KEY };
+            require("fs").writeFileSync("_site/config.js", "window.LEDGER_CONFIG = " + JSON.stringify(c, null, 2) + ";\n");'
+          sed -i "s/BUILD_ID/${GITHUB_SHA::12}/" _site/sw.js
+          touch _site/.nojekyll
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+      - id: deployment
+        uses: actions/deploy-pages@v4

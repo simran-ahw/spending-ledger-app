@@ -1,0 +1,19 @@
+{
+  "name": "Spending Ledger",
+  "short_name": "Spending",
+  "description": "Track spending automatically and build better habits.",
+  "start_url": "./#overview",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#5b7cad",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Add expense", "url": "./#add" },
+    { "name": "Monthly report", "url": "./#report" }
+  ]
+}

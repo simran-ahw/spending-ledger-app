@@ -1,0 +1,12 @@
+project_id = "spending-ledger"
+
+# Each function checks who is calling itself (user sign-in, phone token or cron secret),
+# so the gateway's own JWT check is turned off.
+[functions.ai]
+verify_jwt = false
+
+[functions.ingest]
+verify_jwt = false
+
+[functions.cron]
+verify_jwt = false

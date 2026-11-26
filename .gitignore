@@ -1,0 +1,7 @@
+web/config.js
+web/logic.js
+.secrets.env
+supabase/.temp/
+supabase/functions/.env
+node_modules/
+setup-values.txt
