@@ -1,7 +1,9 @@
 -- Spending Ledger: schema, row-level security, realtime and scheduled jobs.
 -- Every table is private per user: people only ever see their own rows.
 
-create extension if not exists pg_cron;
+create extension if not exists pg_cron with schema pg_catalog;
+grant usage on schema cron to postgres;
+grant all privileges on all tables in schema cron to postgres;
 create extension if not exists pg_net with schema extensions;
 
 -- ---------------------------------------------------------------------------
