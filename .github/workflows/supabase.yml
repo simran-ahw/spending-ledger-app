@@ -33,13 +33,13 @@ jobs:
 
       - uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 3.4.0
 
       - name: Link project
         run: supabase link --project-ref "$PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 
       - name: Apply database changes
-        run: supabase db push --password "$SUPABASE_DB_PASSWORD"
+        run: supabase db push --remote --password "$SUPABASE_DB_PASSWORD"
 
       - name: Set function secrets
         env:
@@ -53,8 +53,8 @@ jobs:
           for v in ANTHROPIC_API_KEY VAPID_PRIVATE_KEY CRON_SECRET VAPID_CONTACT APP_ORIGIN; do
             if [ -n "${!v}" ]; then printf "%s='%s'\n" "$v" "$(printf '%s' "${!v}" | tr -d '\n')" >> .secrets.env; fi
           done
-          if [ -s .secrets.env ]; then supabase secrets set --project-ref "$PROJECT_REF" --env-file .secrets.env; fi
+          if [ -s .secrets.env ]; then supabase secrets set --env-file .secrets.env; fi
           rm -f .secrets.env
 
       - name: Deploy functions
-        run: supabase functions deploy --project-ref "$PROJECT_REF"
+        run: supabase functions deploy --use-api
